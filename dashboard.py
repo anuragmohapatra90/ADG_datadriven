@@ -8,7 +8,8 @@ import pandapower.plotting as plot
 import pandapower as pp
 from active_grid import config, utils
 from active_grid.envs import DistributionGridEnv
-from active_grid.controller import MLP_MPC_Controller
+# CHANGED: Import the unified MPC_Controller
+from active_grid.controller import MPC_Controller
 
 # --- PAGE SETUP ---
 st.set_page_config(page_title="Active Grid Control", layout="wide")
@@ -33,8 +34,10 @@ if 'env' not in st.session_state:
     except Exception as e:
         st.error(f"Grid Layout Init Failed: {e}")
 
+    # CHANGED: Initialize with default model type 'MLP' and track type
     try:
-        st.session_state['controller'] = MLP_MPC_Controller()
+        st.session_state['model_type'] = "MLP"
+        st.session_state['controller'] = MPC_Controller(model_type="mlp")
     except Exception as e:
         st.sidebar.error(f"Failed to load Controller: {e}")
         st.session_state['controller'] = None
@@ -54,6 +57,21 @@ st.sidebar.markdown("---")
 st.sidebar.header("2. Operational Adjustments")
 load_scale = st.sidebar.slider("Load Scaling Factor", 0.5, 2.0, 1.0)
 pv_scale = st.sidebar.slider("PV Generation Factor", 0.0, 2.0, 1.0)
+
+# CHANGED: Added Model Selection
+st.sidebar.subheader("Surrogate Model")
+model_option = st.sidebar.radio("Select Model Type", ["MLP", "SR"], index=0 if st.session_state.get('model_type') == 'MLP' else 1)
+
+# Logic to switch controller if selection changes
+if model_option != st.session_state.get('model_type'):
+    try:
+        new_type = "mlp" if model_option == "MLP" else "sr"
+        st.session_state['controller'] = MPC_Controller(model_type=new_type)
+        st.session_state['model_type'] = model_option
+        st.sidebar.success(f"Switched to {model_option} model.")
+    except Exception as e:
+        st.sidebar.error(f"Failed to switch to {model_option}: {e}")
+
 controller_active = st.sidebar.checkbox("Enable MPC Controller", value=True)
 
 if controller_active:
