@@ -1,0 +1,11 @@
+numpy
+pandas
+pandapower
+scikit-learn
+matplotlib
+tqdm
+pysr
+ipykernel
+numba
+seaborn
+streamlit
