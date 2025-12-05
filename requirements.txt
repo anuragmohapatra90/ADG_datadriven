@@ -1,6 +1,6 @@
 numpy
 pandas
-pandapower
+pandapower[all]
 scikit-learn
 matplotlib
 tqdm
